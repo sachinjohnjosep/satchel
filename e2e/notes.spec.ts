@@ -4,7 +4,7 @@ import { signInAsAdmin } from "./helpers";
 
 const send = async (page: import("@playwright/test").Page, text: string) => {
   // Wait for the form to be interactive before typing (hydration).
-  await page.waitForLoadState("networkidle");
+  await page.locator('form[data-ready="true"]').waitFor();
   await page.getByRole("textbox", { name: "Your note" }).fill(text);
   await page.getByRole("button", { name: "Send" }).click();
 };

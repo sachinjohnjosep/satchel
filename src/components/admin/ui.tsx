@@ -46,7 +46,6 @@ export function AdminForm({
   return (
     <Errors.Provider value={state.fields ?? {}}>
       <form
-        className={className}
         noValidate
         aria-busy={pending}
         onInput={() => setDirty(true)}
@@ -73,7 +72,9 @@ export function AdminForm({
             </p>
           ) : null}
         </div>
-        <PendingContext.Provider value={pending}>{children}</PendingContext.Provider>
+        <PendingContext.Provider value={pending}>
+          <div className={className}>{children}</div>
+        </PendingContext.Provider>
         <Toast state={state} />
       </form>
     </Errors.Provider>

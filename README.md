@@ -1,36 +1,65 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Satchel
 
-## Getting Started
+A personal journal and portfolio for writing, photography, films and short notes, with a private dashboard for publishing from a phone or laptop, and an anonymous “Leave a note” page.
 
-First, run the development server:
+*Satchel* is a working title (a play on Sachin, and the bag you carry notebooks, a camera and ticket stubs in). The film section is **Sachinema**. Both can be renamed in the dashboard.
 
-```bash
-npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+## Guides
+
+- **[Setting it up](docs/SETUP.md)**: accounts, costs, keys and deployment, step by step
+- **[Updating the site](docs/UPDATING.md)**: writing, photos, films, notes and settings from the dashboard
+- **[Testing](docs/TESTING.md)**: how the automated tests work and how to run them
+- **[Checklist](docs/CHECKLIST.md)**: what’s done, what you still need to configure, known limitations
+
+## How it is built
+
+| Part | Choice |
+|---|---|
+| Website | Next.js 16 (App Router) + TypeScript, Tailwind CSS 4 |
+| Content, sign-in, images | Supabase (Postgres with row-level security, Auth, Storage) |
+| Hosting | Vercel |
+| Spam protection | Cloudflare Turnstile + honeypot + hashed rate limiting |
+| Optional email | Resend |
+| Rich text | Tiptap editor, stored as JSON, rendered through an allow-list |
+
+```
+src/app/(site)/        public pages: home, writing, photography, cinema, journal, about, search, note
+src/app/admin/         dashboard (sign-in, editors, notes inbox, settings, preview, backup)
+src/lib/               data loading, validation, auth checks, Supabase clients
+src/components/        site and dashboard components
+supabase/migrations/   database schema, security rules, storage bucket
+supabase/seed.sql      sample content (generated from src/lib/sample.ts)
+supabase/tests/        database security checks
+e2e/                   browser tests (+ a local Supabase stand-in used only for testing)
+tests/                 unit tests
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+### Design
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+Paper and ink: warm off-white, near-black type, one accent (oxblood by default; olive or faded red in Settings). Newsreader (a high-contrast serif with true italics) for headlines and long reading; Schibsted Grotesk for navigation and small print. Film grain lives in the page background only, so photographs are never overlaid. Sachinema switches to a dark “screening room”. Motion is limited to one settling headline on the home page and responses to your own actions, and it switches off when the device asks for reduced motion. Dark mode follows the device, with a switch in the menu.
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### Security in brief
 
-## Learn More
+- Every table has row-level security: visitors can only read published items whose date has passed; drafts, notes and the notification email are invisible to them.
+- Only accounts listed in `admins` can change anything, checked by the dashboard and again by the database.
+- Notes are accepted only through a server action that validates, rate-limits and spam-checks them before storing with the server-only key.
+- Stored text is rendered without raw HTML; links are limited to `https:`, `mailto:` and site paths.
+- Uploads are limited to JPEG/PNG/WebP/AVIF up to 15 MB, by the browser and by the storage bucket.
 
-To learn more about Next.js, take a look at the following resources:
+## Quick start (local)
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+```bash
+npm install
+npm run dev        # preview mode with sample content, no accounts needed
+```
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+Add Supabase keys to `.env.local` (see `.env.example`) to use the dashboard.
 
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+| Command | |
+|---|---|
+| `npm run dev` | local site at http://localhost:3000 |
+| `npm run build` | production build |
+| `npm test` | unit tests |
+| `npm run test:db` | database security checks (needs local Postgres) |
+| `npm run test:e2e` | browser tests (see docs/TESTING.md) |
+| `npm run seed:generate` | rebuild `supabase/seed.sql` from `src/lib/sample.ts` |

@@ -106,6 +106,12 @@ export default async function SettingsPage() {
           ) : null}
         </Panel>
 
+        <Panel title="Backup" description="Downloads all your writing, photo details, films, journal entries, settings and notes as one file. Photographs themselves stay in Supabase Storage.">
+          <a href="/admin/export" download className="btn btn-ghost">
+            Download a backup
+          </a>
+        </Panel>
+
         <div className="sticky bottom-0 z-30 -mx-4 border-t border-rule bg-paper/95 px-4 py-3 backdrop-blur md:static md:mx-0 md:border-0 md:bg-transparent md:p-0">
           <SubmitButton>Save settings</SubmitButton>
         </div>

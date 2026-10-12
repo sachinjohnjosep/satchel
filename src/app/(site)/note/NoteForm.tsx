@@ -1,7 +1,7 @@
 "use client";
 
 import Script from "next/script";
-import { useActionState, useEffect, useRef, useState } from "react";
+import { useActionState, useEffect, useRef, useState, useSyncExternalStore } from "react";
 import { sendNote, type NoteState } from "./actions";
 import { NOTE_MAX } from "@/lib/notes";
 
@@ -18,6 +18,12 @@ export function NoteForm({ initialMessage, turnstileSiteKey }: { initialMessage:
   const status = useRef<HTMLParagraphElement>(null);
   const done = useRef<HTMLDivElement>(null);
   const widget = useRef<HTMLDivElement>(null);
+  // Marks the form as interactive once hydrated (used by tests; harmless otherwise).
+  const ready = useSyncExternalStore(
+    () => () => {},
+    () => true,
+    () => false,
+  );
 
   // After an error, keep what the visitor wrote (the form resets on submit).
   if (state.status === "error" && state.draft !== undefined && state.draft !== lastDraft) {
@@ -54,7 +60,7 @@ export function NoteForm({ initialMessage, turnstileSiteKey }: { initialMessage:
   const invalid = state.status === "error";
 
   return (
-    <form action={action} className="space-y-5" noValidate>
+    <form action={action} className="space-y-5" noValidate data-ready={ready ? "true" : undefined}>
       <div>
         <label htmlFor="message" className="sr-only">
           Your note
