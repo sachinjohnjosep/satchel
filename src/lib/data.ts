@@ -1,0 +1,161 @@
+import "server-only";
+import { cache } from "react";
+import { publicClient } from "./supabase/public";
+import {
+  sampleArticles,
+  sampleCollections,
+  sampleFilmLists,
+  sampleFilms,
+  sampleJournal,
+  samplePhotos,
+  sampleSettings,
+} from "./sample";
+import type { Article, Collection, Film, FilmList, JournalEntry, Photo, SiteSettings } from "./types";
+import { plainText } from "./text";
+
+// Public read layer. Each loader fetches the published rows of one section
+// (row-level security already hides drafts and scheduled posts) and filtering
+// happens in memory. For a personal site this stays fast for thousands of entries
+// and keeps every page on one simple, cacheable query.
+//
+// Without Supabase configured, the same loaders return the sample content.
+
+type Table = "articles" | "photos" | "collections" | "films" | "film_lists" | "journal_entries";
+
+const byDateDesc = <T extends { published_at: string | null }>(a: T, b: T) =>
+  (b.published_at ?? "").localeCompare(a.published_at ?? "");
+
+async function load<T extends { published_at: string | null }>(table: Table, fallback: T[]): Promise<T[]> {
+  const db = publicClient();
+  if (!db) return [...fallback].filter((r) => r.published_at && r.published_at <= new Date().toISOString()).sort(byDateDesc);
+  const { data, error } = await db.from(table).select("*").order("published_at", { ascending: false });
+  if (error) {
+    console.error(`[data] failed to load ${table}:`, error.message);
+    throw new Error("Content is temporarily unavailable.");
+  }
+  return (data ?? []) as T[];
+}
+
+export const getSettings = cache(async (): Promise<SiteSettings> => {
+  const db = publicClient();
+  if (!db) return sampleSettings;
+  const { data, error } = await db.from("site_settings").select("*").eq("id", 1).maybeSingle();
+  if (error || !data) {
+    if (error) console.error("[data] failed to load settings:", error.message);
+    return { ...sampleSettings, site_title: "Satchel" };
+  }
+  return { ...(data as SiteSettings), notify_email: null };
+});
+
+export const getArticles = cache(() => load<Article>("articles", sampleArticles));
+export const getPhotos = cache(() => load<Photo>("photos", samplePhotos));
+export const getCollections = cache(() => load<Collection>("collections", sampleCollections));
+export const getFilms = cache(async () =>
+  (await load<Film>("films", sampleFilms)).map((f) => ({ ...f, rating: f.rating == null ? null : Number(f.rating) })),
+);
+export const getFilmLists = cache(() => load<FilmList>("film_lists", sampleFilmLists));
+export const getJournal = cache(() => load<JournalEntry>("journal_entries", sampleJournal));
+
+// ── Lookups ─────────────────────────────────────────────
+
+export async function getArticle(slug: string) {
+  return (await getArticles()).find((a) => a.slug === slug) ?? null;
+}
+export async function getPhoto(slug: string) {
+  return (await getPhotos()).find((p) => p.slug === slug) ?? null;
+}
+export async function getFilm(slug: string) {
+  return (await getFilms()).find((f) => f.slug === slug) ?? null;
+}
+export async function getJournalEntry(slug: string) {
+  return (await getJournal()).find((j) => j.slug === slug) ?? null;
+}
+export async function getCollection(slug: string) {
+  const collection = (await getCollections()).find((c) => c.slug === slug);
+  if (!collection) return null;
+  const photos = (await getPhotos())
+    .filter((p) => p.collection_id === collection.id)
+    .sort((a, b) => a.position - b.position);
+  return { collection, photos };
+}
+export async function getFilmList(slug: string) {
+  const list = (await getFilmLists()).find((l) => l.slug === slug);
+  if (!list) return null;
+  const films = await getFilms();
+  const ordered = list.film_ids.map((id) => films.find((f) => f.id === id)).filter((f): f is Film => Boolean(f));
+  return { list, films: ordered };
+}
+
+// ── Related content ─────────────────────────────────────
+
+/** Articles sharing tags or category, best matches first, then most recent. */
+export async function relatedArticles(article: Article, limit = 3) {
+  const all = (await getArticles()).filter((a) => a.id !== article.id);
+  const score = (a: Article) =>
+    a.tags.filter((t) => t !== "sample" && article.tags.includes(t)).length * 2 +
+    (a.category && a.category === article.category ? 1 : 0);
+  return all
+    .map((a) => ({ a, s: score(a) }))
+    .sort((x, y) => y.s - x.s || byDateDesc(x.a, y.a))
+    .slice(0, limit)
+    .map((x) => x.a);
+}
+
+export async function relatedFilms(film: Film, limit = 3) {
+  const all = (await getFilms()).filter((f) => f.id !== film.id);
+  const score = (f: Film) =>
+    f.genres.filter((g) => film.genres.includes(g)).length + (f.director && f.director === film.director ? 2 : 0);
+  return all
+    .map((f) => ({ f, s: score(f) }))
+    .sort((x, y) => y.s - x.s || byDateDesc(x.f, y.f))
+    .slice(0, limit)
+    .map((x) => x.f);
+}
+
+// ── Filtering ───────────────────────────────────────────
+
+export const distinct = (values: (string | null | undefined)[]) =>
+  [...new Set(values.filter((v): v is string => Boolean(v)))].sort((a, b) => a.localeCompare(b));
+
+export type FilmFilter = { genre?: string; rating?: string; decade?: string; category?: string; favourites?: string };
+
+export function filterFilms(films: Film[], f: FilmFilter) {
+  return films.filter(
+    (film) =>
+      (!f.genre || film.genres.includes(f.genre)) &&
+      (!f.rating || (film.rating ?? 0) >= Number(f.rating)) &&
+      (!f.decade || (film.release_year != null && Math.floor(film.release_year / 10) * 10 === Number(f.decade))) &&
+      (!f.category || film.category === f.category) &&
+      (!f.favourites || film.is_favourite),
+  );
+}
+
+// ── Search ──────────────────────────────────────────────
+
+export type SearchHit = { kind: "Writing" | "Photograph" | "Film" | "Journal"; title: string; href: string; snippet: string; date: string | null };
+
+export async function search(query: string): Promise<SearchHit[]> {
+  const q = query.trim().toLowerCase();
+  if (q.length < 2) return [];
+  const terms = q.split(/\s+/);
+  const matches = (...fields: (string | null | undefined | string[])[]) => {
+    const hay = fields.flat().filter(Boolean).join(" ").toLowerCase();
+    return terms.every((t) => hay.includes(t));
+  };
+  const [articles, photos, films, journal] = await Promise.all([getArticles(), getPhotos(), getFilms(), getJournal()]);
+  const hits: SearchHit[] = [
+    ...articles
+      .filter((a) => matches(a.title, a.subtitle, a.excerpt, a.category, a.tags, plainText(a.body)))
+      .map((a) => ({ kind: "Writing" as const, title: a.title, href: `/writing/${a.slug}`, snippet: a.excerpt ?? a.subtitle ?? "", date: a.published_at })),
+    ...photos
+      .filter((p) => matches(p.title, p.caption, p.location, p.category, p.tags))
+      .map((p) => ({ kind: "Photograph" as const, title: p.title, href: `/photography/${p.slug}`, snippet: p.caption ?? "", date: p.published_at })),
+    ...films
+      .filter((f) => matches(f.title, f.director, f.genres, f.tags, f.short_review, String(f.release_year ?? "")))
+      .map((f) => ({ kind: "Film" as const, title: f.title, href: `/cinema/${f.slug}`, snippet: [f.director, f.release_year].filter(Boolean).join(", "), date: f.published_at })),
+    ...journal
+      .filter((j) => matches(j.body, j.quote_source, j.tags))
+      .map((j) => ({ kind: "Journal" as const, title: j.body.slice(0, 80), href: `/journal/${j.slug}`, snippet: j.quote_source ?? "", date: j.published_at })),
+  ];
+  return hits.sort((a, b) => (b.date ?? "").localeCompare(a.date ?? ""));
+}

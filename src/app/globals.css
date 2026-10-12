@@ -1,26 +1,301 @@
 @import "tailwindcss";
 
+/* ─────────────────────────────────────────────────────────────
+   Satchel design tokens
+   Paper and ink, one accent, two typefaces.
+   ───────────────────────────────────────────────────────────── */
+
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --paper: #f0e9db;
+  --paper-deep: #e7dfcd;
+  --ink: #1a1714;
+  --charcoal: #3a352f;
+  --dust: #6c6458; /* metadata; 5:1 on paper */
+  --rule: #cdc2ad;
+  --oxblood: #6b2622;
+  --olive: #4f592b;
+  --faded-red: #93382f;
+  --accent: var(--oxblood);
+  --focus: #1f4e79;
+
+  /* The screening room: Sachinema is always dark */
+  --screen: #1c1712;
+  --screen-ink: #ece2cf;
+  --screen-dust: #a89d8a;
+  --screen-rule: #3b3229;
+
+  --serif: "Newsreader Variable", "Iowan Old Style", "Palatino Linotype", Georgia, serif;
+  --sans: "Schibsted Grotesk Variable", "Helvetica Neue", Arial, sans-serif;
+
+  --gutter: 20px;
+  --measure: 34rem;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  color-scheme: light;
 }
 
-@theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+:root[data-accent="olive"] { --accent: var(--olive); }
+:root[data-accent="faded-red"] { --accent: var(--faded-red); }
+
+@media (min-width: 768px) {
+  :root { --gutter: 40px; }
 }
 
 @media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
+  :root:not([data-theme="light"]) {
+    --paper: #1b1814;
+    --paper-deep: #24201b;
+    --ink: #ece4d6;
+    --charcoal: #cfc5b4;
+    --dust: #a39a8c;
+    --rule: #3a332b;
+    --oxblood: #d27d72;
+    --olive: #aab47e;
+    --faded-red: #df8a7c;
+    --focus: #8fb8e0;
+    --screen: #120f0c;
+    color-scheme: dark;
   }
+}
+:root[data-theme="dark"] {
+  --paper: #1b1814;
+  --paper-deep: #24201b;
+  --ink: #ece4d6;
+  --charcoal: #cfc5b4;
+  --dust: #a39a8c;
+  --rule: #3a332b;
+  --oxblood: #d27d72;
+  --olive: #aab47e;
+  --faded-red: #df8a7c;
+  --focus: #8fb8e0;
+  --screen: #120f0c;
+  color-scheme: dark;
+}
+
+@theme inline {
+  --color-paper: var(--paper);
+  --color-paper-deep: var(--paper-deep);
+  --color-ink: var(--ink);
+  --color-charcoal: var(--charcoal);
+  --color-dust: var(--dust);
+  --color-rule: var(--rule);
+  --color-accent: var(--accent);
+  --color-screen: var(--screen);
+  --color-screen-ink: var(--screen-ink);
+  --color-screen-dust: var(--screen-dust);
+  --color-screen-rule: var(--screen-rule);
+  --font-serif: var(--serif);
+  --font-sans: var(--sans);
+}
+
+/* ── Base ─────────────────────────────────────────────────── */
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  scroll-padding-top: 5rem;
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-variant-numeric: proportional-nums;
+  background-color: var(--paper);
+  /* Film grain lives in the page background only: photographs sit above it untouched. */
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.55;
+  font-feature-settings: "kern", "liga";
 }
+
+::selection { background: var(--accent); color: var(--paper); }
+
+a { color: inherit; text-decoration-thickness: 1px; text-underline-offset: 0.18em; }
+
+:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 3px;
+  border-radius: 1px;
+}
+
+img { max-width: 100%; height: auto; }
+
+.wrap {
+  width: 100%;
+  max-width: 1320px;
+  margin-inline: auto;
+  padding-inline: var(--gutter);
+}
+
+.serif { font-family: var(--serif); }
+
+/* Small print: dates, places, counts. Sentence case, tabular figures. */
+.meta {
+  font-family: var(--sans);
+  font-size: 0.8125rem;
+  line-height: 1.4;
+  color: var(--dust);
+}
+
+/* Links that look like text until you reach for them */
+.quiet-link { text-decoration: none; background-image: linear-gradient(currentColor, currentColor); background-size: 0 1px; background-position: 0 100%; background-repeat: no-repeat; transition: background-size 0.35s var(--ease); }
+.quiet-link:hover, .quiet-link:focus-visible { background-size: 100% 1px; }
+
+.ruled { border-top: 1px solid var(--rule); }
+
+.sample-mark {
+  display: inline-block;
+  font-family: var(--sans);
+  font-size: 0.6875rem;
+  line-height: 1;
+  letter-spacing: 0.02em;
+  padding: 0.3em 0.5em 0.25em;
+  border: 1px dashed currentColor;
+  color: var(--dust);
+  vertical-align: middle;
+  white-space: nowrap;
+}
+
+/* ── Reading ──────────────────────────────────────────────── */
+
+.prose-journal {
+  font-family: var(--serif);
+  font-size: 1.25rem;
+  line-height: 1.65;
+  font-variation-settings: "opsz" 16;
+  color: var(--ink);
+  max-width: var(--measure);
+  hanging-punctuation: first;
+}
+@media (max-width: 480px) {
+  .prose-journal { font-size: 1.1875rem; }
+}
+.prose-journal > * + * { margin-top: 1.1em; }
+.prose-journal h2 {
+  font-size: 1.6rem;
+  line-height: 1.2;
+  font-weight: 450;
+  font-style: italic;
+  margin-top: 2.2em;
+}
+.prose-journal h3 { font-size: 1.3rem; font-weight: 550; margin-top: 1.8em; }
+.prose-journal h2 + *, .prose-journal h3 + * { margin-top: 0.6em; }
+.prose-journal a { text-decoration-color: var(--accent); text-decoration-thickness: 1px; }
+.prose-journal a:hover { color: var(--accent); }
+.prose-journal blockquote {
+  margin-block: 1.8em;
+  padding-left: 1.2em;
+  border-left: 2px solid var(--accent);
+  font-style: italic;
+  color: var(--charcoal);
+}
+.prose-journal ul { list-style: disc; padding-left: 1.2em; }
+.prose-journal ol { list-style: decimal; padding-left: 1.4em; }
+.prose-journal li + li { margin-top: 0.3em; }
+.prose-journal hr { border: 0; text-align: center; margin-block: 2.4em; }
+.prose-journal hr::after { content: "⁂"; color: var(--dust); font-size: 1.1rem; }
+.prose-journal pre { font-size: 0.85rem; background: var(--paper-deep); padding: 1rem; overflow-x: auto; }
+.prose-journal .rich-figure { margin-block: 2.2em; }
+@media (min-width: 900px) {
+  .prose-journal .rich-figure { margin-inline: -6rem; }
+}
+.prose-journal figcaption { font-family: var(--sans); font-size: 0.8125rem; color: var(--dust); margin-top: 0.6rem; }
+
+/* The opening letter of essays */
+.drop-cap > p:first-child::first-letter {
+  float: left;
+  font-size: 3.6em;
+  line-height: 0.82;
+  padding: 0.06em 0.09em 0 0;
+  font-weight: 400;
+  color: var(--accent);
+}
+
+/* ── Sachinema: the screening room ────────────────────────── */
+
+.screening {
+  --paper: var(--screen);
+  --paper-deep: #2a231c;
+  --ink: var(--screen-ink);
+  --charcoal: #d6cbb7;
+  --dust: var(--screen-dust);
+  --rule: var(--screen-rule);
+  --accent: #d48a7f;
+  --focus: #8fb8e0;
+  background: var(--screen);
+  color: var(--screen-ink);
+  color-scheme: dark;
+}
+
+/* ── Forms (shared by the note page and the dashboard) ────── */
+
+.field-label { display: block; font-size: 0.875rem; font-weight: 550; margin-bottom: 0.35rem; color: var(--charcoal); }
+.field-hint { font-size: 0.8125rem; color: var(--dust); margin-top: 0.3rem; }
+.input {
+  width: 100%;
+  background: color-mix(in srgb, var(--paper) 70%, white 30%);
+  border: 1px solid var(--rule);
+  color: var(--ink);
+  padding: 0.65rem 0.75rem;
+  font: inherit;
+  font-size: 1rem; /* 16px avoids zoom on iOS */
+  border-radius: 2px;
+  transition: border-color 0.2s;
+}
+:root[data-theme="dark"] .input { background: var(--paper-deep); }
+@media (prefers-color-scheme: dark) { :root:not([data-theme="light"]) .input { background: var(--paper-deep); } }
+.input:focus { outline: none; border-color: var(--ink); box-shadow: 0 0 0 1px var(--ink); }
+.input[aria-invalid="true"] { border-color: var(--faded-red); }
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  min-height: 44px;
+  padding: 0.55rem 1.15rem;
+  font-family: var(--sans);
+  font-size: 0.9375rem;
+  font-weight: 550;
+  border: 1px solid var(--ink);
+  background: var(--ink);
+  color: var(--paper);
+  border-radius: 2px;
+  cursor: pointer;
+  transition: background-color 0.2s, color 0.2s, opacity 0.2s;
+}
+.btn:hover { background: var(--accent); border-color: var(--accent); }
+.btn:disabled { opacity: 0.55; cursor: progress; }
+.btn-ghost { background: transparent; color: var(--ink); }
+.btn-ghost:hover { background: var(--paper-deep); color: var(--ink); border-color: var(--ink); }
+.btn-danger { background: transparent; color: var(--faded-red); border-color: var(--faded-red); }
+.btn-danger:hover { background: var(--faded-red); color: var(--paper); border-color: var(--faded-red); }
+.btn-small { min-height: 36px; padding: 0.35rem 0.75rem; font-size: 0.875rem; }
+
+/* ── Motion ───────────────────────────────────────────────── */
+
+::view-transition-old(root), ::view-transition-new(root) { animation-duration: 0.28s; }
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+  ::view-transition-group(*), ::view-transition-old(*), ::view-transition-new(*) { animation: none !important; }
+}
+
+/* The one orchestrated moment: the home headline settles in on first load. */
+@keyframes settle {
+  from { opacity: 0; transform: translateY(0.25em); filter: blur(3px); }
+  to { opacity: 1; transform: none; filter: none; }
+}
+.settle-in > * { animation: settle 0.9s var(--ease) both; }
+.settle-in > *:nth-child(2) { animation-delay: 0.12s; }
+.settle-in > *:nth-child(3) { animation-delay: 0.24s; }
+
+.skip-link {
+  position: absolute; left: 1rem; top: -4rem; z-index: 100;
+  background: var(--ink); color: var(--paper); padding: 0.6rem 1rem;
+}
+.skip-link:focus { top: 1rem; }
