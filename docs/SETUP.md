@@ -23,11 +23,12 @@ This takes about 45 minutes the first time. You need four free accounts; a fifth
 
 ## 2. Create the database
 
-In the Supabase dashboard, open **SQL Editor → New query**. Run these three files from the repository, **in this order**, by pasting each one in and clicking **Run**:
+In the Supabase dashboard, open **SQL Editor → New query**. Run these four files from the repository, **in this order**, by pasting each one in and clicking **Run**:
 
 1. `supabase/migrations/20261012000000_init.sql`: tables and security rules
 2. `supabase/migrations/20261012000100_storage.sql`: the image bucket and its rules
-3. `supabase/seed.sql`: sample content, clearly marked “Sample” (optional, but useful for seeing how everything looks)
+3. `supabase/migrations/20261014000000_grants.sql`: lets the website's keys use the tables (newer Supabase projects don't allow this automatically)
+4. `supabase/seed.sql`: sample content, clearly marked “Sample” (optional, but useful for seeing how everything looks)
 
 Each should finish with “Success. No rows returned.”
 

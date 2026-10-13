@@ -9,6 +9,7 @@ createdb "$DB"
 run() { psql -q -v ON_ERROR_STOP=1 -d "$DB" -f "$1" >/dev/null; }
 run supabase/tests/shim.sql
 run supabase/migrations/20261012000000_init.sql
+run supabase/migrations/20261014000000_grants.sql
 run supabase/seed.sql
 HASH=$(printf '%s' "${E2E_ADMIN_PASSWORD:-correct horse battery}" | sha256sum | cut -d' ' -f1)
 psql -q -v ON_ERROR_STOP=1 -d "$DB" <<SQL

@@ -30,7 +30,10 @@ async function load<T extends { published_at: string | null }>(table: Table, fal
   if (!db) return [...fallback].filter((r) => r.published_at && r.published_at <= new Date().toISOString()).sort(byDateDesc);
   const { data, error } = await db.from(table).select("*").order("published_at", { ascending: false });
   if (error) {
-    console.error(`[data] failed to load ${table}:`, error.message);
+    console.error(`[data] failed to load ${table}: ${error.code ?? ""} ${error.message}`);
+    // Never fail a deployment over one read: build with no items and let the
+    // pages fill in on their next refresh (within 5 minutes) once the database answers.
+    if (process.env.NEXT_PHASE === "phase-production-build") return [];
     throw new Error("Content is temporarily unavailable.");
   }
   return (data ?? []) as T[];
