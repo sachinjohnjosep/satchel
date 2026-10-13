@@ -11,7 +11,7 @@ let client: SupabaseClient | null = null;
  * client components; the "server-only" import makes that a build error.
  */
 export function secretClient(): SupabaseClient | null {
-  const key = process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY;
+  const key = (process.env.SUPABASE_SECRET_KEY ?? process.env.SUPABASE_SERVICE_ROLE_KEY)?.trim();
   if (!supabaseUrl || !key) return null;
   client ??= createClient(supabaseUrl, key, { auth: { persistSession: false, autoRefreshToken: false } });
   return client;

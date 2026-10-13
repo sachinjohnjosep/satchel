@@ -25,3 +25,12 @@ describe("text helpers", () => {
     expect(ratingLabel(null)).toBe("Not rated");
   });
 });
+
+import { normaliseSupabaseUrl } from "@/lib/env";
+describe("Supabase URL", () => {
+  it("accepts the project URL in the forms people paste", () => {
+    for (const raw of ["https://abc.supabase.co", "https://abc.supabase.co/", " https://abc.supabase.co/rest/v1/ ", "https://abc.supabase.co/rest/v1"]) {
+      expect(normaliseSupabaseUrl(raw)).toBe("https://abc.supabase.co");
+    }
+  });
+});

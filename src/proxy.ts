@@ -1,11 +1,12 @@
 import { NextResponse, type NextRequest } from "next/server";
 import { createServerClient } from "@supabase/ssr";
+import { normaliseSupabaseUrl } from "@/lib/env";
 
 // Runs only for the dashboard. Refreshes the sign-in session and sends signed-out
 // visitors to the login page. Every admin page and action also re-checks on the
 // server, and the database enforces it again with row-level security.
 export async function proxy(request: NextRequest) {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const url = normaliseSupabaseUrl(process.env.NEXT_PUBLIC_SUPABASE_URL);
   const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY ?? process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
   const isLogin = request.nextUrl.pathname === "/admin/login";
   if (!url || !key) return isLogin ? NextResponse.next() : NextResponse.redirect(new URL("/admin/login", request.url));
