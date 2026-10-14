@@ -10,7 +10,9 @@ import { formatDate, readingMinutes } from "@/lib/text";
 import { RichText } from "@/components/RichText";
 import { Poster, Rating } from "@/components/site/bits";
 import { JournalEntryView } from "@/components/site/JournalEntryView";
-import type { Article, Film, JournalEntry, Photo } from "@/lib/types";
+import type { Article, Film, JournalEntry, Listen, Photo } from "@/lib/types";
+import { Sleeve } from "@/components/site/Sleeve";
+import { ListenPlayer } from "@/components/site/ListenPlayer";
 
 export const metadata: Metadata = { title: "Preview", robots: { index: false, follow: false } };
 
@@ -67,6 +69,29 @@ export default async function Preview({ params }: PageProps<"/admin/preview/[sec
     content = (
       <div className="wrap pt-10">
         <JournalEntryView entry={row as unknown as JournalEntry} linked={false} large />
+      </div>
+    );
+  } else if (section === "listening") {
+    const l = row as unknown as Listen;
+    content = (
+      <div className="wrap py-12">
+        <div className="grid gap-10 md:grid-cols-12">
+          <div className="group mx-auto w-2/3 md:col-span-5 md:w-full">
+            <div className="mr-[14%]">
+              <Sleeve title={l.title} subtitle={l.artist} coverPath={l.cover_path} seed={l.slug} sizes="40vw" />
+            </div>
+          </div>
+          <div className="md:col-span-7">
+            <h1 className="serif text-[clamp(2.5rem,6vw,4.5rem)] leading-none">{l.title}</h1>
+            <p className="mt-3 text-charcoal">{[l.artist, l.release_year].filter(Boolean).join(", ")}</p>
+            <Rating value={l.rating == null ? null : Number(l.rating)} className="mt-6" />
+            {l.short_note ? <p className="serif mt-8 text-[1.5rem] leading-snug">{l.short_note}</p> : null}
+            <div className="mt-8">
+              <ListenPlayer url={l.listen_url} title={l.title} />
+            </div>
+          </div>
+        </div>
+        {l.body ? <RichText doc={l.body} className="prose-journal mx-auto mt-14" /> : null}
       </div>
     );
   } else if (section === "photos") {

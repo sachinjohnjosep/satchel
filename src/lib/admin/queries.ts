@@ -9,6 +9,8 @@ export const LIST_COLUMNS: Record<SectionKey, string> = {
   stories: "id, slug, title, status, published_at, updated_at, is_placeholder",
   films: "id, slug, title, release_year, rating, status, published_at, updated_at, is_placeholder",
   lists: "id, slug, title, status, published_at, updated_at, is_placeholder",
+  listening: "id, slug, title, artist, release_year, rating, status, published_at, updated_at, is_placeholder",
+  playlists: "id, slug, title, status, published_at, updated_at, is_placeholder",
   journal: "id, slug, body, kind, status, published_at, updated_at, is_placeholder",
 };
 
@@ -24,6 +26,7 @@ export type ListRow = {
   is_placeholder: boolean;
   image_path?: string;
   release_year?: number | null;
+  artist?: string | null;
   rating?: number | null;
   kind?: string;
 };
@@ -44,9 +47,9 @@ export async function getRow<T>(db: SupabaseClient, section: SectionKey, id: str
 }
 
 /** Existing categories and tags, offered as suggestions while typing. */
-export async function suggestions(db: SupabaseClient, table: string) {
-  const { data } = await db.from(table).select("category, tags").limit(1000);
-  const rows = (data ?? []) as { category: string | null; tags: string[] }[];
+export async function suggestions(db: SupabaseClient, table: string, withCategory = true) {
+  const { data } = await db.from(table).select(withCategory ? "category, tags" : "tags").limit(1000);
+  const rows = (data ?? []) as unknown as { category?: string | null; tags: string[] }[];
   const uniq = (xs: (string | null)[]) => [...new Set(xs.filter((x): x is string => Boolean(x)))].sort();
-  return { categories: uniq(rows.map((r) => r.category)), tags: uniq(rows.flatMap((r) => r.tags ?? [])) };
+  return { categories: uniq(rows.map((r) => r.category ?? null)), tags: uniq(rows.flatMap((r) => r.tags ?? [])) };
 }

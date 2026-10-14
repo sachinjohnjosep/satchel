@@ -47,6 +47,19 @@ insert into public.journal_entries (id, slug, status, published_at, is_placehold
   ('f0000000-0000-4000-8000-000000000004', 'sample-update', 'published', '2026-10-03T00:00:00.000Z', true, null, null, 'Sample update. Use these for news about the site or what you are working on.', 'update', null, array['sample'])
 on conflict (id) do nothing;
 
+insert into public.listens (id, slug, status, published_at, is_placeholder, seo_title, seo_description, title, artist, kind, release_year, cover_path, cover_credit, rating, short_note, body, genres, tags, is_favourite, listen_url, listened_on) values
+  ('70000000-0000-4000-8000-000000000001', 'kid-a', 'published', '2026-10-11T00:00:00.000Z', true, null, null, 'Kid A', 'Radiohead', 'album', 2000, null, null, 5, 'Sample note. A line or two on why this stays on repeat goes here.', '{"type":"doc","content":[{"type":"paragraph","content":[{"type":"text","text":"Sample long-form note. Longer thoughts about a record appear below the short note, in the same reading layout as essays."}]},{"type":"paragraph","content":[{"type":"text","text":"Add a Spotify, YouTube, Apple Music or SoundCloud link in the dashboard and a player appears here, loading only when someone presses play."}]}]}'::jsonb, array['Alternative', 'Electronic'], array['sample'], true, null, null),
+  ('70000000-0000-4000-8000-000000000002', 'kind-of-blue', 'published', '2026-10-08T00:00:00.000Z', true, null, null, 'Kind of Blue', 'Miles Davis', 'album', 1959, null, null, 5, 'Sample note. A line or two on why this stays on repeat goes here.', null, array['Jazz'], array['sample'], true, null, null),
+  ('70000000-0000-4000-8000-000000000003', 'roja', 'published', '2026-10-05T00:00:00.000Z', true, null, null, 'Roja', 'A. R. Rahman', 'album', 1992, null, null, 4.5, 'Sample note. A line or two on why this stays on repeat goes here.', null, array['Film score'], array['sample'], true, null, null),
+  ('70000000-0000-4000-8000-000000000004', 'blonde', 'published', '2026-10-02T00:00:00.000Z', true, null, null, 'Blonde', 'Frank Ocean', 'album', 2016, null, null, 4.5, 'Sample note. A line or two on why this stays on repeat goes here.', null, array['R&B'], array['sample'], false, null, null),
+  ('70000000-0000-4000-8000-000000000005', 'carrie-and-lowell', 'published', '2026-09-29T00:00:00.000Z', true, null, null, 'Carrie & Lowell', 'Sufjan Stevens', 'album', 2015, null, null, 4, 'Sample note. A line or two on why this stays on repeat goes here.', null, array['Folk'], array['sample'], false, null, null),
+  ('70000000-0000-4000-8000-000000000006', 'pink-and-white', 'published', '2026-09-26T00:00:00.000Z', true, null, null, 'Pink + White', 'Frank Ocean', 'song', 2016, null, null, 4, 'Sample note. A line or two on why this stays on repeat goes here.', null, array['R&B'], array['sample'], false, null, null)
+on conflict (id) do nothing;
+
+insert into public.playlists (id, slug, status, published_at, is_placeholder, seo_title, seo_description, title, description, listen_ids, listen_url, cover_path) values
+  ('71000000-0000-4000-8000-000000000001', 'late-trains', 'published', '2026-10-08T00:00:00.000Z', true, null, null, 'Late trains (sample playlist)', 'Playlists collect records and songs around a mood. Placeholder: rename it, reorder it, or add a link to your own Spotify playlist.', array['70000000-0000-4000-8000-000000000002', '70000000-0000-4000-8000-000000000005', '70000000-0000-4000-8000-000000000001']::uuid[], null, null)
+on conflict (id) do nothing;
+
 update public.site_settings set
   site_title = 'Satchel',
   tagline = 'Words, frames and films, carried around.',

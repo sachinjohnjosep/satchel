@@ -1,6 +1,6 @@
 // The dashboard's content sections. Adding a new kind of content starts here.
 
-export type SectionKey = "writing" | "photos" | "stories" | "films" | "lists" | "journal";
+export type SectionKey = "writing" | "photos" | "stories" | "films" | "lists" | "listening" | "playlists" | "journal";
 
 export const SECTIONS: Record<
   SectionKey,
@@ -11,6 +11,8 @@ export const SECTIONS: Record<
   stories: { table: "collections", label: "Photo stories", singular: "story", publicPath: (s) => `/photography/stories/${s}`, newLabel: "New story" },
   films: { table: "films", label: "Films", singular: "film", publicPath: (s) => `/cinema/${s}`, newLabel: "Add film" },
   lists: { table: "film_lists", label: "Film lists", singular: "list", publicPath: (s) => `/cinema/lists/${s}`, newLabel: "New list" },
+  listening: { table: "listens", label: "Listening", singular: "record", publicPath: (s) => `/listening/${s}`, newLabel: "Add record" },
+  playlists: { table: "playlists", label: "Playlists", singular: "playlist", publicPath: (s) => `/listening/playlists/${s}`, newLabel: "New playlist" },
   journal: { table: "journal_entries", label: "Journal", singular: "entry", publicPath: (s) => `/journal/${s}`, newLabel: "New entry" },
 };
 

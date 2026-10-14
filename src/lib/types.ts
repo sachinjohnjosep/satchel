@@ -82,6 +82,34 @@ export type FilmList = Base & {
   film_ids: string[];
 };
 
+export type ListenKind = "album" | "song" | "ep" | "live";
+
+export type Listen = Base & {
+  title: string;
+  artist: string | null;
+  kind: ListenKind;
+  release_year: number | null;
+  cover_path: string | null;
+  cover_credit: string | null;
+  rating: number | null;
+  short_note: string | null;
+  body: RichDoc | null;
+  genres: string[];
+  tags: string[];
+  is_favourite: boolean;
+  /** Spotify, YouTube, Apple Music, SoundCloud or Bandcamp link. */
+  listen_url: string | null;
+  listened_on: string | null;
+};
+
+export type Playlist = Base & {
+  title: string;
+  description: string | null;
+  listen_ids: string[];
+  listen_url: string | null;
+  cover_path: string | null;
+};
+
 export type JournalKind = "thought" | "observation" | "quotation" | "update";
 
 export type JournalEntry = Base & {

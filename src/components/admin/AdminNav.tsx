@@ -11,6 +11,8 @@ const ITEMS = [
   { href: "/admin/stories", label: "Photo stories" },
   { href: "/admin/films", label: "Films" },
   { href: "/admin/lists", label: "Film lists" },
+  { href: "/admin/listening", label: "Listening" },
+  { href: "/admin/playlists", label: "Playlists" },
   { href: "/admin/journal", label: "Journal" },
   { href: "/admin/settings", label: "Settings" },
 ];

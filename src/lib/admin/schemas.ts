@@ -152,36 +152,52 @@ export const collectionSchema = z.object({
   cover_photo_id: uuidOrNull,
 });
 
-export const filmSchema = z.object({
-  ...common,
-  title: requiredText("The film's title", 200),
-  release_year: z
+const year = (min: number) =>
+  z
     .string()
     .default("")
     .transform((s, ctx) => {
       if (!s.trim()) return null;
       const n = Number(s);
-      if (!Number.isInteger(n) || n < 1870 || n > 2200) {
+      if (!Number.isInteger(n) || n < min || n > 2200) {
         ctx.addIssue({ code: "custom", message: "Enter a four-digit year." });
         return z.NEVER;
       }
       return n;
-    }),
+    });
+
+const rating = z
+  .string()
+  .default("")
+  .transform((s, ctx) => {
+    if (!s.trim()) return null;
+    const n = Number(s);
+    if (Number.isNaN(n) || n < 0 || n > 5 || (n * 2) % 1 !== 0) {
+      ctx.addIssue({ code: "custom", message: "Ratings go from 0 to 5 in half steps." });
+      return z.NEVER;
+    }
+    return n;
+  });
+
+/** Optional https link to a music service (or anywhere): the player is built from it. */
+const musicLink = z
+  .preprocess((v) => (typeof v === "string" ? v.trim() : ""), z.string().max(500))
+  .transform((s) => (s === "" ? null : s))
+  .refine((s) => s === null || /^https:\/\/[^\s]+$/.test(s), "Paste the full link, starting with https://");
+
+const idCsv = z
+  .string()
+  .default("")
+  .transform((s) => s.split(",").map((x) => x.trim()).filter((x) => z.uuid().safeParse(x).success));
+
+export const filmSchema = z.object({
+  ...common,
+  title: requiredText("The film's title", 200),
+  release_year: year(1870),
   director: text(200),
   poster_path: storagePath,
   poster_credit: text(200),
-  rating: z
-    .string()
-    .default("")
-    .transform((s, ctx) => {
-      if (!s.trim()) return null;
-      const n = Number(s);
-      if (Number.isNaN(n) || n < 0 || n > 5 || (n * 2) % 1 !== 0) {
-        ctx.addIssue({ code: "custom", message: "Ratings go from 0 to 5 in half steps." });
-        return z.NEVER;
-      }
-      return n;
-    }),
+  rating,
   short_review: text(600),
   body: richDoc,
   genres: titleList,
@@ -199,6 +215,33 @@ export const filmListSchema = z.object({
     .string()
     .default("")
     .transform((s) => s.split(",").map((x) => x.trim()).filter((x) => z.uuid().safeParse(x).success)),
+});
+
+export const listenSchema = z.object({
+  ...common,
+  title: requiredText("The title", 200),
+  artist: text(200),
+  kind: z.enum(["album", "song", "ep", "live"]).default("album"),
+  release_year: year(1800),
+  cover_path: storagePath,
+  cover_credit: text(200),
+  rating,
+  short_note: text(600),
+  body: richDoc,
+  genres: titleList,
+  tags: list,
+  is_favourite: bool,
+  listen_url: musicLink,
+  listened_on: dateOnly,
+});
+
+export const playlistSchema = z.object({
+  ...common,
+  title: requiredText("A title", 200),
+  description: text(1000),
+  listen_ids: idCsv,
+  listen_url: musicLink,
+  cover_path: storagePath,
 });
 
 export const journalSchema = z.object({

@@ -7,8 +7,8 @@ import { getRow, suggestions } from "@/lib/admin/queries";
 import { deleteItem, saveItem } from "@/lib/admin/actions";
 import { AdminForm } from "@/components/admin/ui";
 import { AddressFields, PublishBar } from "@/components/admin/PublishBar";
-import { articleFields, filmFields, journalFields, listFields, photoFields, storyFields } from "./fields";
-import type { Article, Collection, Film, FilmList, JournalEntry, Photo } from "@/lib/types";
+import { articleFields, filmFields, journalFields, listenFields, listFields, photoFields, playlistFields, storyFields } from "./fields";
+import type { Article, Collection, Film, FilmList, JournalEntry, Listen, Photo, Playlist } from "@/lib/types";
 
 type AnyRow = { id: string; slug: string; status: string; published_at: string | null; seo_title: string | null; seo_description: string | null; title?: string; body?: unknown };
 
@@ -18,7 +18,7 @@ export async function generateMetadata({ params }: PageProps<"/admin/[section]/[
   return { title: id === "new" ? SECTIONS[section].newLabel : `Edit ${SECTIONS[section].singular}` };
 }
 
-const PREVIEWABLE: SectionKey[] = ["writing", "films", "journal", "photos"];
+const PREVIEWABLE: SectionKey[] = ["writing", "films", "journal", "photos", "listening"];
 
 export default async function EditItem({ params, searchParams }: PageProps<"/admin/[section]/[id]">) {
   const { section, id } = await params;
@@ -59,6 +59,17 @@ export default async function EditItem({ params, searchParams }: PageProps<"/adm
     case "lists": {
       const { data: films } = await supabase.from("films").select("id, title, release_year").order("title");
       fields = listFields(r as Partial<FilmList>, films ?? []);
+      break;
+    }
+    case "listening": {
+      const [sugg, { data: g }] = await Promise.all([suggestions(supabase, "listens", false), supabase.from("listens").select("genres").limit(1000)]);
+      const genres = [...new Set(["Alternative", "Classical", "Electronic", "Film score", "Folk", "Hip-hop", "Jazz", "Malayalam", "Pop", "R&B", "Rock", ...(g ?? []).flatMap((x: { genres: string[] }) => x.genres)])].sort();
+      fields = listenFields(r as Partial<Listen>, sugg, genres);
+      break;
+    }
+    case "playlists": {
+      const { data: listens } = await supabase.from("listens").select("id, title, artist").order("title");
+      fields = playlistFields(r as Partial<Playlist>, listens ?? []);
       break;
     }
     case "journal": {

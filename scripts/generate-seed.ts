@@ -7,7 +7,9 @@ import {
   sampleFilmLists,
   sampleFilms,
   sampleJournal,
+  sampleListens,
   samplePhotos,
+  samplePlaylists,
   sampleSettings,
 } from "../src/lib/sample";
 
@@ -49,6 +51,8 @@ sql += insert("articles", sampleArticles);
 sql += insert("films", sampleFilms);
 sql += insert("film_lists", sampleFilmLists, { film_ids: "uuid[]" });
 sql += insert("journal_entries", sampleJournal);
+const listeningSql = insert("listens", sampleListens) + insert("playlists", samplePlaylists, { listen_ids: "uuid[]" });
+sql += listeningSql;
 
 const set = Object.entries(publicSettings)
   .map(([k, v]) => {
@@ -60,4 +64,8 @@ const set = Object.entries(publicSettings)
 sql += `update public.site_settings set\n${set}\nwhere id = 1;\n`;
 
 writeFileSync(new URL("../supabase/seed.sql", import.meta.url), sql);
+writeFileSync(
+  new URL("../supabase/seed-listening.sql", import.meta.url),
+  `-- Sample albums and a playlist for the Listening section (marked is_placeholder).\n-- Only needed if you set up the site before Listening existed.\n\n${listeningSql}`,
+);
 console.log("wrote supabase/seed.sql");

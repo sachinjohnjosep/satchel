@@ -17,7 +17,7 @@ import pg from "pg";
 
 const PORT = Number(process.env.SHIM_PORT ?? 54321);
 const JWT_SECRET = process.env.SHIM_JWT_SECRET ?? "test-only-secret-test-only-secret!!";
-const STORAGE_DIR = process.env.SHIM_STORAGE_DIR ?? path.resolve(".e2e-storage");
+const STORAGE_DIR = process.env.SHIM_STORAGE_DIR ?? path.join(process.env.TMPDIR ?? "/tmp", "satchel-e2e-run", "storage");
 // PostgREST returns numeric columns as JSON numbers; match it.
 pg.types.setTypeParser(1700, (v) => (v === null ? null : Number(v)));
 // PostgREST returns dates as plain YYYY-MM-DD strings.

@@ -16,6 +16,8 @@ import {
   finalSlug,
   formToObject,
   journalSchema,
+  listenSchema,
+  playlistSchema,
   photoSchema,
   resolvePublishing,
   settingsSchema,
@@ -35,6 +37,8 @@ const SCHEMAS = {
   stories: collectionSchema,
   films: filmSchema,
   lists: filmListSchema,
+  listening: listenSchema,
+  playlists: playlistSchema,
   journal: journalSchema,
 } satisfies Record<SectionKey, z.ZodTypeAny>;
 

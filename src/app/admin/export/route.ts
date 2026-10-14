@@ -5,7 +5,7 @@ import { getAdmin } from "@/lib/auth";
 // a simple backup you can keep alongside your photographs.
 export const dynamic = "force-dynamic";
 
-const TABLES = ["site_settings", "articles", "photos", "collections", "films", "film_lists", "journal_entries", "messages"] as const;
+const TABLES = ["site_settings", "articles", "photos", "collections", "films", "film_lists", "journal_entries", "listens", "playlists", "messages"] as const;
 
 export async function GET() {
   const admin = await getAdmin();

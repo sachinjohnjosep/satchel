@@ -13,6 +13,10 @@ insert into public.articles (slug, title, status, published_at) values
   ('draft-one', 'Draft', 'draft', null),
   ('scheduled-one', 'Scheduled', 'published', now() + interval '3 days');
 insert into public.messages (body) values ('a private note');
+insert into public.listens (slug, title, status, published_at) values
+  ('live-record', 'Live record', 'published', now() - interval '1 hour'),
+  ('draft-record', 'Draft record', 'draft', null);
+insert into public.playlists (slug, title, status, published_at) values ('draft-playlist', 'Draft playlist', 'draft', null);
 update public.private_settings set notify_email = 'me@example.test';
 
 create or replace function pg_temp.expect(cond boolean, label text) returns void language plpgsql as $$
@@ -29,6 +33,13 @@ select pg_temp.expect((select count(*) from public.articles) = 1, 'anon sees onl
 select pg_temp.expect(not exists (select 1 from public.articles where slug = 'draft-one'), 'anon cannot see drafts');
 select pg_temp.expect(not exists (select 1 from public.articles where slug = 'scheduled-one'), 'anon cannot see scheduled posts early');
 select pg_temp.expect((select count(*) from public.site_settings) = 1, 'anon can read public site settings');
+select pg_temp.expect((select count(*) from public.listens) = 1, 'anon sees only published listening entries');
+select pg_temp.expect((select count(*) from public.playlists) = 0, 'anon cannot see draft playlists');
+do $$ begin
+  insert into public.listens (slug, title) values ('x', 'x');
+  raise exception 'FAIL: anon could add a listening entry';
+exception when insufficient_privilege then raise notice 'ok  anon cannot write listening entries';
+end $$;
 
 do $$ begin
   perform 1 from public.messages;
@@ -88,6 +99,9 @@ set role authenticated;
 select set_config('request.jwt.claim.sub', '00000000-0000-0000-0000-00000000000a', false);
 
 select pg_temp.expect((select count(*) from public.articles) = 3, 'admin sees drafts and scheduled posts');
+select pg_temp.expect((select count(*) from public.listens) = 2, 'admin sees draft listening entries');
+insert into public.playlists (slug, title, listen_ids) values ('admin-playlist', 'Mine', array[(select id from public.listens limit 1)]);
+select pg_temp.expect((select count(*) from public.playlists) = 2, 'admin can create playlists');
 select pg_temp.expect((select count(*) from public.messages) = 1, 'admin can read notes');
 select pg_temp.expect((select notify_email from public.private_settings) = 'me@example.test', 'admin can read private settings');
 insert into public.articles (slug, title) values ('admin-new', 'New');
@@ -102,6 +116,12 @@ do $$ begin
   insert into public.articles (slug, title) values ('Bad Slug!', 'x');
   raise exception 'FAIL: invalid slug accepted';
 exception when check_violation then raise notice 'ok  slugs are validated';
+end $$;
+
+do $$ begin
+  insert into public.listens (slug, title, listen_url) values ('bad-link', 'x', 'javascript:alert(1)');
+  raise exception 'FAIL: non-https listen link accepted';
+exception when check_violation then raise notice 'ok  listening links must be https';
 end $$;
 
 do $$ begin

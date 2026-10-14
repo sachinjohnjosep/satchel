@@ -58,6 +58,15 @@ Reading time is worked out automatically. Related pieces are chosen from shared 
 
 **Film lists** (Dashboard → Film lists) are ordered lists like “Quiet films”. Add films and use Up/Down to order them.
 
+## Listening (records and playlists)
+
+**Dashboard → Listening → Add record.** Title, artist, year, kind (album, song, EP, live), your rating, a short note and optional longer thoughts. Tick **On repeat** to show it in the On repeat row and on the home page.
+
+- **Listening link:** paste a link from Spotify, YouTube, Apple Music or SoundCloud (use the app's **Share → Copy link**). The page then shows a **Play** button; the actual player loads only when a visitor presses it, so nothing from those services tracks visitors before that. Bandcamp and other sites show a **Listen** button instead.
+- **Cover:** optional. Upload only artwork you may use (for example your own photo of the sleeve). Without one, the site shows a coloured typographic sleeve.
+
+**Dashboard → Playlists → New playlist.** Add records, order them with Up/Down, and optionally paste a link to the full playlist on Spotify or YouTube.
+
 ## Journal
 
 **Dashboard → Journal → New entry.** Plain text, no title needed. Pick a kind: thought, observation, quotation (add the source) or update. A blank line starts a new paragraph.

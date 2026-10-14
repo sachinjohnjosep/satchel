@@ -3,7 +3,7 @@ import { Checkbox, Panel, SelectField, TagsField, TextArea, TextField } from "@/
 import { ImageUpload } from "@/components/admin/ImageUpload";
 import { RichEditor } from "@/components/admin/RichEditor";
 import { FilmPicker } from "@/components/admin/FilmPicker";
-import type { Article, Collection, Film, FilmList, JournalEntry, Photo } from "@/lib/types";
+import type { Article, Collection, Film, FilmList, JournalEntry, Listen, Photo, Playlist } from "@/lib/types";
 
 // The fields for each kind of content. `main` goes in the wide column, `side` beside it.
 
@@ -146,6 +146,82 @@ export function listFields(l: Partial<FilmList>, films: Pick<Film, "id" | "title
       </div>
     ),
     side: null,
+  };
+}
+
+const LINK_HINT = "Optional. Paste a Spotify, YouTube, Apple Music or SoundCloud link and a player appears on the page (it loads only when a visitor presses Play). Bandcamp and other links show a Listen button.";
+
+export function listenFields(l: Partial<Listen>, s: Sugg, genres: string[]): Out {
+  return {
+    main: (
+      <div className="space-y-6">
+        <TextField name="title" label="Title" defaultValue={l.title} required className="!font-serif !text-[1.5rem]" hint="The album or song." />
+        <div className="grid gap-6 sm:grid-cols-[1fr_8rem]">
+          <TextField name="artist" label="Artist" defaultValue={l.artist} />
+          <TextField name="release_year" label="Year" inputMode="numeric" defaultValue={l.release_year} maxLength={4} />
+        </div>
+        <div className="grid gap-6 sm:grid-cols-2">
+          <SelectField
+            name="kind"
+            label="Kind"
+            defaultValue={l.kind ?? "album"}
+            options={[
+              { value: "album", label: "Album" },
+              { value: "song", label: "Song" },
+              { value: "ep", label: "EP" },
+              { value: "live", label: "Live recording" },
+            ]}
+          />
+          <SelectField
+            name="rating"
+            label="My rating"
+            defaultValue={l.rating == null ? "" : String(l.rating)}
+            options={[{ value: "", label: "Not rated" }, ...[5, 4.5, 4, 3.5, 3, 2.5, 2, 1.5, 1, 0.5, 0].map((r) => ({ value: String(r), label: `${r} out of 5` }))]}
+          />
+        </div>
+        <TextField name="listen_url" type="url" label="Listening link" defaultValue={l.listen_url} placeholder="https://open.spotify.com/album/…" hint={LINK_HINT} />
+        <TextArea name="short_note" label="Short note" defaultValue={l.short_note} rows={3} maxLength={600} hint="A few lines shown on the page and in lists." />
+        <RichEditor name="body" label="Longer thoughts (optional)" defaultValue={l.body ?? null} folder="listening" />
+      </div>
+    ),
+    side: (
+      <>
+        <Panel title="Organise">
+          <TagsField name="genres" label="Genres" defaultValue={l.genres?.join(", ")} suggestions={genres} hint="Separate with commas, e.g. Jazz, Film score." />
+          <TagsField name="tags" label="Tags" defaultValue={l.tags?.join(", ")} suggestions={s.tags} />
+          <TextField name="listened_on" type="date" label="First heard" defaultValue={l.listened_on} />
+          <Checkbox name="is_favourite" label="On repeat" defaultChecked={l.is_favourite} hint="Shown in the On repeat row and on the home page." />
+        </Panel>
+        <Panel title="Cover" description="Only upload artwork you are allowed to use (your own photo of the sleeve, or press material with credit). Without one, a typographic sleeve is shown.">
+          <ImageUpload name="cover_path" label="Cover" folder="covers" defaultPath={l.cover_path} />
+          <TextField name="cover_credit" label="Image credit" defaultValue={l.cover_credit} />
+        </Panel>
+      </>
+    ),
+  };
+}
+
+export function playlistFields(p: Partial<Playlist>, listens: Pick<Listen, "id" | "title" | "artist">[]): Out {
+  return {
+    main: (
+      <div className="space-y-6">
+        <TextField name="title" label="Title" defaultValue={p.title} required className="!font-serif !text-[1.5rem]" />
+        <TextArea name="description" label="Description" defaultValue={p.description} rows={3} maxLength={1000} />
+        <FilmPicker
+          name="listen_ids"
+          legend="Records in this playlist"
+          noun="record"
+          films={listens.map((l) => ({ id: l.id, title: l.title, detail: l.artist }))}
+          defaultIds={p.listen_ids ?? []}
+        />
+        <TextField name="listen_url" type="url" label="Link to the full playlist" defaultValue={p.listen_url} placeholder="https://open.spotify.com/playlist/…" hint={LINK_HINT} />
+      </div>
+    ),
+    side: (
+      <Panel title="Cover" description="Optional. Without one, the first four sleeves are shown as a grid.">
+        <ImageUpload name="cover_path" label="Cover" folder="covers" defaultPath={p.cover_path} />
+      </Panel>
+    ),
   };
 }
 

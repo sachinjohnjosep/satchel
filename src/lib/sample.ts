@@ -4,7 +4,7 @@
 // when Supabase is not configured yet. Replace it from the admin dashboard.
 import { doc, p, h2, em, quote, stanza, hr } from "./richtext-build";
 import { readingMinutes } from "./text";
-import type { Article, Collection, Film, FilmList, JournalEntry, Photo, SiteSettings } from "./types";
+import type { Article, Collection, Film, FilmList, JournalEntry, Listen, Photo, Playlist, SiteSettings } from "./types";
 
 const day = (n: number) => new Date(Date.UTC(2026, 9, 12) - n * 86400000).toISOString();
 const base = (id: string, slug: string, daysAgo: number) => ({
@@ -200,6 +200,51 @@ export const sampleFilmLists: FilmList[] = [
     title: "Quiet films (sample list)",
     description: "Curated lists collect films around a mood or idea. Placeholder: rename it and choose your own films.",
     film_ids: [sampleFilms[0].id, sampleFilms[3].id, sampleFilms[4].id],
+  },
+];
+
+// ── Listening (real records; ratings and notes are placeholders) ──
+const listenDefs: [string, string, string, Listen["kind"], number, string[], number, boolean][] = [
+  ["kid-a", "Kid A", "Radiohead", "album", 2000, ["Alternative", "Electronic"], 5, true],
+  ["kind-of-blue", "Kind of Blue", "Miles Davis", "album", 1959, ["Jazz"], 5, true],
+  ["roja", "Roja", "A. R. Rahman", "album", 1992, ["Film score"], 4.5, true],
+  ["blonde", "Blonde", "Frank Ocean", "album", 2016, ["R&B"], 4.5, false],
+  ["carrie-and-lowell", "Carrie & Lowell", "Sufjan Stevens", "album", 2015, ["Folk"], 4, false],
+  ["pink-and-white", "Pink + White", "Frank Ocean", "song", 2016, ["R&B"], 4, false],
+];
+
+export const sampleListens: Listen[] = listenDefs.map(([slug, title, artist, kind, year, genres, rating, fav], i) => ({
+  ...base(`70000000-0000-4000-8000-00000000000${i + 1}`, slug, 1 + i * 3),
+  title,
+  artist,
+  kind,
+  release_year: year,
+  cover_path: null,
+  cover_credit: null,
+  rating,
+  short_note: "Sample note. A line or two on why this stays on repeat goes here.",
+  body:
+    i === 0
+      ? doc(
+          p("Sample long-form note. Longer thoughts about a record appear below the short note, in the same reading layout as essays."),
+          p("Add a Spotify, YouTube, Apple Music or SoundCloud link in the dashboard and a player appears here, loading only when someone presses play."),
+        )
+      : null,
+  genres,
+  tags: ["sample"],
+  is_favourite: fav,
+  listen_url: null,
+  listened_on: null,
+}));
+
+export const samplePlaylists: Playlist[] = [
+  {
+    ...base("71000000-0000-4000-8000-000000000001", "late-trains", 4),
+    title: "Late trains (sample playlist)",
+    description: "Playlists collect records and songs around a mood. Placeholder: rename it, reorder it, or add a link to your own Spotify playlist.",
+    listen_ids: [sampleListens[1].id, sampleListens[4].id, sampleListens[0].id],
+    listen_url: null,
+    cover_path: null,
   },
 ];
 

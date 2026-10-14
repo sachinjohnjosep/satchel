@@ -4,9 +4,9 @@ There are three layers. All of them passed on the version in this repository.
 
 | Layer | Command | What it covers | Count |
 |---|---|---|---|
-| Unit | `npm test` | note validation, rate-limit hashing, slugs, reading time, publishing rules, form validation, safe rich-text rendering | 27 |
-| Database | `npm run test:db` | row-level security for visitors, signed-in non-admins and admins; constraints; the rate limiter | 29 checks |
-| Browser | `npm run test:e2e` | navigation, SEO tags, 404s, filters, search, lightbox, dark mode, sign-in, the full draft → publish → edit → unpublish → schedule → delete cycle, image upload (and metadata removal), settings, the notes form and inbox, rate limiting, honeypot, direct-API permission checks, backup, phone layouts and publishing from a phone | 32 |
+| Unit | `npm test` | note validation, rate-limit hashing, slugs, reading time, publishing rules, form validation, safe rich-text rendering, music-link parsing | 34 |
+| Database | `npm run test:db` | row-level security for visitors, signed-in non-admins and admins; constraints; the rate limiter | 35 checks |
+| Browser | `npm run test:e2e` | navigation, SEO tags, 404s, filters, search, lightbox, dark mode, sign-in, the full draft → publish → edit → unpublish → schedule → delete cycle, image upload (and metadata removal), settings, the notes form and inbox, rate limiting, honeypot, direct-API permission checks, backup, Listening (filters, click-to-load player, records and playlists), phone layouts and publishing from a phone | 36 |
 
 ## Database checks
 
@@ -23,7 +23,7 @@ The browser tests need the site running against a database with an admin user. T
 ```bash
 export PGHOST=localhost PGUSER=postgres
 scripts/e2e-env.sh                 # creates database satchel_e2e with sample content and test users
-scripts/e2e-services.sh start      # starts the stand-in on :54321 and `next dev` on :3000 (writes .env.local!)
+scripts/e2e-services.sh start      # starts the stand-in on :54321 and `next dev` on :3000 (writes .env.local!; logs in /tmp/satchel-e2e-run)
 npx playwright install chromium    # once
 npm run test:e2e
 scripts/e2e-services.sh stop

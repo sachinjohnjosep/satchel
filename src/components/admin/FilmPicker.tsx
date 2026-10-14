@@ -2,10 +2,22 @@
 
 import { useState } from "react";
 
-type F = { id: string; title: string; release_year: number | null };
+type F = { id: string; title: string; release_year?: number | null; detail?: string | null };
 
-/** Choose films for a list and put them in order. */
-export function FilmPicker({ name, films, defaultIds }: { name: string; films: F[]; defaultIds: string[] }) {
+/** Choose items (films, records…) for a list and put them in order. */
+export function FilmPicker({
+  name,
+  films,
+  defaultIds,
+  legend = "Films in this list",
+  noun = "film",
+}: {
+  name: string;
+  films: F[];
+  defaultIds: string[];
+  legend?: string;
+  noun?: string;
+}) {
   const [ids, setIds] = useState(defaultIds.filter((id) => films.some((f) => f.id === id)));
   const [adding, setAdding] = useState("");
   const byId = new Map(films.map((f) => [f.id, f]));
@@ -18,11 +30,11 @@ export function FilmPicker({ name, films, defaultIds }: { name: string; films: F
       [next[i], next[j]] = [next[j], next[i]];
       return next;
     });
-  const label = (f: F) => `${f.title}${f.release_year ? ` (${f.release_year})` : ""}`;
+  const label = (f: F) => `${f.title}${f.detail ? `, ${f.detail}` : ""}${f.release_year ? ` (${f.release_year})` : ""}`;
 
   return (
     <fieldset>
-      <legend className="field-label">Films in this list</legend>
+      <legend className="field-label">{legend}</legend>
       {ids.length ? (
         <ol className="border-b border-rule">
           {ids.map((id, i) => (
@@ -42,15 +54,15 @@ export function FilmPicker({ name, films, defaultIds }: { name: string; films: F
           ))}
         </ol>
       ) : (
-        <p className="field-hint">No films yet. Add some below.</p>
+        <p className="field-hint">Nothing here yet. Add some below.</p>
       )}
       {available.length ? (
         <div className="mt-4 flex flex-wrap gap-2">
           <label htmlFor="add-film" className="sr-only">
-            Film to add
+            {noun[0].toUpperCase() + noun.slice(1)} to add
           </label>
           <select id="add-film" className="input max-w-sm" value={adding} onChange={(e) => setAdding(e.target.value)}>
-            <option value="">Choose a film…</option>
+            <option value="">Choose a {noun}…</option>
             {available.map((f) => (
               <option key={f.id} value={f.id}>
                 {label(f)}
@@ -70,7 +82,7 @@ export function FilmPicker({ name, films, defaultIds }: { name: string; films: F
           </button>
         </div>
       ) : films.length === 0 ? (
-        <p className="field-hint mt-2">Add some films first, then come back to build a list.</p>
+        <p className="field-hint mt-2">Add some {noun}s first, then come back to build a list.</p>
       ) : null}
       <input type="hidden" name={name} value={ids.join(",")} />
     </fieldset>

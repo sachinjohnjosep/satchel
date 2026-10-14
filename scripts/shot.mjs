@@ -11,7 +11,7 @@ const page = await browser.newPage({
   colorScheme: theme === "dark" ? "dark" : "light",
   deviceScaleFactor: 1,
 });
-await page.goto(`${process.env.BASE_URL || "http://localhost:3000"}${path}`, { waitUntil: "networkidle" });
+await page.goto(`${process.env.BASE_URL || "http://localhost:3000"}${path}`, { waitUntil: "load" });
 // Scroll through the page so lazy-loaded images load before the capture.
 await page.evaluate(async () => {
   for (let y = 0; y < document.body.scrollHeight; y += 600) {

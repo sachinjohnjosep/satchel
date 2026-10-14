@@ -7,6 +7,7 @@
 - [x] Writing: list with category filter and tags; article pages with subtitle, cover, category, tags, date, reading time, related pieces, share button, structured data
 - [x] Photography: uneven grid, full-screen viewer (keyboard and swipe), individual photo pages, categories, tags, places, photo stories
 - [x] Sachinema: favourites, curated lists, filters by genre, rating, decade, kind and favourites; film pages with rating, short and long review; title cards when there is no poster
+- [x] Listening: albums and songs with ratings and notes, On repeat row, playlists, filters by kind and genre, click-to-load players for Spotify, YouTube, Apple Music and SoundCloud
 - [x] Journal: short entries (thought, observation, quotation, update) with their own pages
 - [x] About: introduction, rich text, profile photo, social links, all editable
 - [x] Leave a note: single field, Send button, privacy explanation, confirmation; no name or email
@@ -14,7 +15,7 @@
 
 **Dashboard**
 - [x] Password sign-in; admin allow-list; non-admins refused; signed-out visitors redirected
-- [x] Create, edit, preview, publish, unpublish, schedule and delete for writing, photographs, photo stories, films, film lists and journal entries
+- [x] Create, edit, preview, publish, unpublish, schedule and delete for writing, photographs, photo stories, films, film lists, records, playlists and journal entries
 - [x] Rich text editor with headings, quotes, lists, links, line breaks for poems, dividers and images (with alt text and captions)
 - [x] Image uploads from phone or laptop, with type/size checks and removal of location data
 - [x] Categories and tags with suggestions; web address and search/sharing fields per item

@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { getArticles, getFilms, getJournal, getPhotos, getSettings } from "@/lib/data";
+import { getArticles, getFilms, getJournal, getListens, getPhotos, getSettings } from "@/lib/data";
+import { ListenCard } from "@/components/site/Sleeve";
 import { formatDate, formatShortDate } from "@/lib/text";
 import { ArticleRow, FilmCard, Frame, SectionHead } from "@/components/site/bits";
 import { SampleMark } from "@/components/site/SampleMark";
@@ -7,13 +8,16 @@ import { mediaUrl } from "@/lib/media";
 import Image from "next/image";
 
 export default async function Home() {
-  const [settings, articles, photos, films, journal] = await Promise.all([
+  const [settings, articles, photos, films, journal, listens] = await Promise.all([
     getSettings(),
     getArticles(),
     getPhotos(),
     getFilms(),
     getJournal(),
+    getListens(),
   ]);
+  // Favourites first, then the most recent.
+  const onRepeat = [...listens.filter((l) => l.is_favourite), ...listens.filter((l) => !l.is_favourite)].slice(0, 4);
 
   // Featured items come from Settings; anything missing falls back to the most recent.
   const featuredPhoto = photos.find((p) => p.id === settings.featured_photo_id) ?? photos[0];
@@ -139,6 +143,19 @@ export default async function Home() {
               ))}
             </div>
           </div>
+        </section>
+      ) : null}
+
+      {onRepeat.length ? (
+        <section className="wrap mt-24 md:mt-32" aria-labelledby="listening-h">
+          <SectionHead id="listening-h" title="On repeat" href="/listening" linkLabel="All listening" />
+          <ul className="grid grid-cols-2 gap-x-5 gap-y-10 sm:grid-cols-4 md:gap-x-8">
+            {onRepeat.map((l) => (
+              <li key={l.id}>
+                <ListenCard listen={l} />
+              </li>
+            ))}
+          </ul>
         </section>
       ) : null}
 

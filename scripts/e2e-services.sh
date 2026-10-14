@@ -4,7 +4,9 @@
 # Test harness only.
 set -uo pipefail
 cd "$(dirname "$0")/.."
-RUN=.e2e-run
+# Logs and test uploads live outside the project, so the dev server's file
+# watcher doesn't see them change and reload the page in a loop.
+RUN="${E2E_RUN_DIR:-${TMPDIR:-/tmp}/satchel-e2e-run}"
 mkdir -p "$RUN"
 MODE="${2:-dev}"
 : "${PGHOST:=/tmp}" "${PGPORT:=54329}" "${PGUSER:=postgres}"
@@ -22,7 +24,7 @@ stop() {
 
 start() {
   SHIM_DATABASE_URL="postgres://${PGUSER}@/${E2E_DB:-satchel_e2e}?host=${PGHOST}&port=${PGPORT}" \
-    SHIM_STORAGE_DIR="$PWD/.e2e-storage" nohup node e2e/supabase-shim.mjs >"$RUN/shim.log" 2>&1 &
+    SHIM_STORAGE_DIR="$RUN/storage" nohup node e2e/supabase-shim.mjs >"$RUN/shim.log" 2>&1 &
   echo $! >"$RUN/shim.pid"
   for _ in $(seq 1 30); do grep -q SERVICE_KEY "$RUN/shim.log" 2>/dev/null && break; sleep 0.2; done
   ANON=$(grep ANON_KEY "$RUN/shim.log" | cut -d= -f2)

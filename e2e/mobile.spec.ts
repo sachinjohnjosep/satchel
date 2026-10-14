@@ -17,7 +17,7 @@ test("mobile menu opens, navigates, and closes", async ({ page }) => {
 });
 
 test("no page scrolls sideways on a phone", async ({ page }) => {
-  for (const path of ["/", "/writing/on-paying-attention", "/photography", "/cinema", "/cinema/lists/quiet-films", "/journal", "/about", "/note"]) {
+  for (const path of ["/", "/writing/on-paying-attention", "/photography", "/cinema", "/cinema/lists/quiet-films", "/listening", "/listening/kid-a", "/journal", "/about", "/note"]) {
     await page.goto(path);
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, `${path} overflows by ${overflow}px`).toBeLessThanOrEqual(0);
